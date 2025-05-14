@@ -37,7 +37,7 @@ class BookingRepository
         }
     }
 
-    // Сохранение в CSV
+
     private function saveToCsv(Booking $booking): void
     {
         $filePath = self::CSV_FILE_PATH;

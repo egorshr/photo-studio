@@ -16,7 +16,6 @@ class BookingController
     public function __construct()
     {
         $this->repository = new BookingRepository();
-        // Инициализируем базу данных при старте приложения
         Database::initDatabase();
     }
 
@@ -74,7 +73,7 @@ class BookingController
                 $date
             );
 
-            // Сохраняем в выбранное хранилище
+
             $this->repository->saveBooking($booking, $storageType);
 
             header('Location: ?route=success');
@@ -106,10 +105,9 @@ class BookingController
     {
         $type = $_POST['storage_type'] ?? 'csv';
 
-        // Устанавливаем куки на 30 дней
+
         setcookie('storage_type', $type, time() + 30 * 24 * 60 * 60, '/');
 
-        // Перенаправляем обратно на форму
         header('Location: ?route=form');
         exit;
     }

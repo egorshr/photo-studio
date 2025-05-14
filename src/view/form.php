@@ -129,11 +129,13 @@
         <form action="?route=set-storage" method="POST" class="storage-form">
             <div>
                 <label>
-                    <input type="radio" name="storage_type" value="csv" <?= (!isset($storageType) || $storageType === 'csv') ? 'checked' : '' ?>>
+                    <input type="radio" name="storage_type"
+                           value="csv" <?= (!isset($storageType) || $storageType === 'csv') ? 'checked' : '' ?>>
                     CSV файл
                 </label>
                 <label>
-                    <input type="radio" name="storage_type" value="db" <?= (isset($storageType) && $storageType === 'db') ? 'checked' : '' ?>>
+                    <input type="radio" name="storage_type"
+                           value="db" <?= (isset($storageType) && $storageType === 'db') ? 'checked' : '' ?>>
                     База данных
                 </label>
             </div>
