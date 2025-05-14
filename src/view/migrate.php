@@ -1,3 +1,11 @@
+<?php
+
+$isLoggedIn = isset($_SESSION['user_id']);
+$username = $_SESSION['username'] ?? '';
+$userRole = $_SESSION['role'] ?? '';
+?>
+
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -56,12 +64,42 @@
         .button:hover {
             background-color: #434de2;
         }
+
+        .user-info {
+            background-color: #f8f8f8;
+            padding: 10px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .user-info span {
+            margin-right: 15px;
+        }
+
+        .user-info a {
+            color: #5c67f2;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        .user-info a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Миграция данных из CSV в базу данных</h1>
-
+    <div class="user-info">
+        <?php if ($isLoggedIn): ?>
+            <span>Пользователь: <?= htmlspecialchars($username) ?> (<?= htmlspecialchars($userRole) ?>)</span>
+            <a href="?route=logout">Выйти</a>
+        <?php else: ?>
+            <a href="?route=login">Войти</a>
+            <a href="?route=register">Регистрация</a>
+        <?php endif; ?>
+    </div>
     <div class="message <?= isset($message) && str_contains($message, 'Ошибка') ? 'error' : '' ?>">
         <?= htmlspecialchars($message ?? 'Операция выполнена') ?>
     </div>

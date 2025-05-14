@@ -7,6 +7,12 @@ $availablePhotographers = $availablePhotographers ?? Photographer::getAvailableP
 $bookings = $bookings ?? [];
 ?>
 
+<?php
+$isLoggedIn = isset($_SESSION['user_id']);
+$username = $_SESSION['username'] ?? '';
+$userRole = $_SESSION['role'] ?? '';
+?>
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -163,6 +169,28 @@ $bookings = $bookings ?? [];
             justify-content: flex-end;
             gap: 12px;
         }
+
+        .user-info {
+            background-color: #f8f8f8;
+            padding: 10px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .user-info span {
+            margin-right: 15px;
+        }
+
+        .user-info a {
+            color: #5c67f2;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        .user-info a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -178,6 +206,15 @@ $bookings = $bookings ?? [];
         </div>
         <div class="storage-info">
             Хранилище: <?= $storageType === 'db' ? 'База данных' : 'CSV файл' ?>
+        </div>
+        <div class="user-info">
+            <?php if ($isLoggedIn): ?>
+                <span>Пользователь: <?= htmlspecialchars($username) ?> (<?= htmlspecialchars($userRole) ?>)</span>
+                <a href="?route=logout">Выйти</a>
+            <?php else: ?>
+                <a href="?route=login">Войти</a>
+                <a href="?route=register">Регистрация</a>
+            <?php endif; ?>
         </div>
     </div>
 

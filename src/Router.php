@@ -1,37 +1,67 @@
 <?php
+// src/Router.php - обновленная версия
 
 require_once __DIR__ . '/controllers/BookingController.php';
+require_once __DIR__ . '/controllers/AuthController.php';
 
 class Router
 {
     public function handleRequest(string $route, string $method): void
     {
-        $controller = new BookingController();
+        $bookingController = new BookingController();
+        $authController = new AuthController();
 
         switch ($route) {
             case '':
             case 'form':
+                // Проверяем авторизацию пользователя
+                AuthController::requireLogin();
+
                 if ($method === 'POST') {
-                    $controller->submitForm();
+                    $bookingController->submitForm();
                 } else {
-                    $controller->showForm();
+                    $bookingController->showForm();
                 }
                 break;
 
             case 'success':
-                $controller->showSuccess();
+                AuthController::requireLogin();
+                $bookingController->showSuccess();
                 break;
 
             case 'migrate':
-                $controller->migrateData();
+                AuthController::requireAdmin(); // Требуем права администратора
+                $bookingController->migrateData();
                 break;
 
             case 'set-storage':
-                $controller->setStorageType();
+                AuthController::requireLogin();
+                $bookingController->setStorageType();
 
             case 'bookings':
-                $controller->showBookings();
+                AuthController::requireLogin();
+                $bookingController->showBookings();
                 break;
+
+            // Новые маршруты для аутентификации
+            case 'login':
+                if ($method === 'POST') {
+                    $authController->login();
+                } else {
+                    $authController->showLoginForm();
+                }
+                break;
+
+            case 'register':
+                if ($method === 'POST') {
+                    $authController->register();
+                } else {
+                    $authController->showRegisterForm();
+                }
+                break;
+
+            case 'logout':
+                $authController->logout();
 
             default:
                 http_response_code(404);
