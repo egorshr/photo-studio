@@ -56,7 +56,6 @@
             background-color: #434de2;
         }
 
-
         .errors {
             background-color: #ffe0e0;
             border: 1px solid #cc0000;
@@ -66,11 +65,81 @@
             border-radius: 4px;
         }
 
+        .storage-selector {
+            background-color: #f2f2f2;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .storage-selector h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .storage-form {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .storage-form label {
+            margin-bottom: 0;
+            margin-right: 10px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .storage-form label input {
+            width: auto;
+            margin-right: 5px;
+            margin-bottom: 0;
+        }
+
+        .storage-form button {
+            width: auto;
+            padding: 8px 15px;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .nav-links a {
+            color: #5c67f2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Запись в фотостудию</h1>
+
+    <div class="storage-selector">
+        <h3>Выберите тип хранилища данных</h3>
+        <form action="?route=set-storage" method="POST" class="storage-form">
+            <div>
+                <label>
+                    <input type="radio" name="storage_type" value="csv" <?= (!isset($storageType) || $storageType === 'csv') ? 'checked' : '' ?>>
+                    CSV файл
+                </label>
+                <label>
+                    <input type="radio" name="storage_type" value="db" <?= (isset($storageType) && $storageType === 'db') ? 'checked' : '' ?>>
+                    База данных
+                </label>
+            </div>
+            <button type="submit">Применить</button>
+        </form>
+    </div>
 
     <?php if (!empty($errors)): ?>
         <div class="errors">
@@ -106,12 +175,18 @@
             <?php endforeach; ?>
         </select>
 
-
         <label for="date">Дата</label>
         <input type="date" name="date" id="date" value="<?= htmlspecialchars($data['date'] ?? '') ?>">
 
         <button type="submit">Записаться</button>
     </form>
+
+    <div class="nav-links">
+        <a href="?route=bookings">Просмотр записей</a>
+        <?php if (!isset($storageType) || $storageType === 'csv'): ?>
+            <a href="?route=migrate">Мигрировать данные в БД</a>
+        <?php endif; ?>
+    </div>
 </div>
 </body>
 </html>

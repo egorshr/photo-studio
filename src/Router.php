@@ -14,6 +14,12 @@ class Router {
             }
         } elseif ($route === 'success') {
             $controller->showSuccess();
+        } elseif ($route === 'migrate') {
+            $controller->migrateData();
+        } elseif ($route === 'set-storage') {
+            $controller->setStorageType();
+        } elseif ($route === 'bookings') {
+            $controller->showBookings();
         } else {
             http_response_code(404);
             echo "Страница не найдена";

@@ -15,7 +15,7 @@ class Service
         ];
 
         if (!in_array($name, $validServices, true)) {
-            throw new \InvalidArgumentException('Невалидная услуга');
+            throw new InvalidArgumentException('Невалидная услуга');
         }
 
         $this->name = $name;

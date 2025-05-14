@@ -1,16 +1,31 @@
 <?php
 
-require_once __DIR__ . '/../models/Booking.php';
-require_once __DIR__ . '/../models/Photographer.php';
-require_once __DIR__ . '/../models/Service.php';
+use JetBrains\PhpStorm\NoReturn;
+
+require_once __DIR__ . '/../model/Booking.php';
+require_once __DIR__ . '/../model/Photographer.php';
+require_once __DIR__ . '/../model/Service.php';
+require_once __DIR__ . '/../model/Database.php';
+require_once __DIR__ . '/../repository/BookingRepository.php';
+require_once __DIR__ . '/../service/DataMigrator.php';
 
 class BookingController
 {
+    private BookingRepository $repository;
+
+    public function __construct()
+    {
+        $this->repository = new BookingRepository();
+        // Инициализируем базу данных при старте приложения
+        Database::initDatabase();
+    }
 
     public function showForm(): void
     {
         $errors = [];
-        require __DIR__ . '/../views/form.php';
+        $data = $_POST ?? [];
+        $storageType = $_COOKIE['storage_type'] ?? 'csv';
+        require __DIR__ . '/../view/form.php';
     }
 
     public function submitForm(): void
@@ -19,6 +34,7 @@ class BookingController
         $data = $_POST ?? [];
         $service = null;
         $photographer = null;
+        $storageType = $_COOKIE['storage_type'] ?? 'csv';
 
         $name = trim($data['name'] ?? '');
         if (empty($name)) {
@@ -29,7 +45,6 @@ class BookingController
             $errors[] = "Имя может содержать только буквы, пробелы и дефисы.";
         }
 
-
         $date = $data['date'] ?? '';
         if (empty($date)) {
             $errors[] = "Дата не может быть пустой.";
@@ -38,7 +53,6 @@ class BookingController
         } elseif (strtotime($date) < strtotime(date('Y-m-d'))) {
             $errors[] = "Дата не может быть в прошлом.";
         }
-
 
         try {
             $service = new Service($data['service'] ?? '');
@@ -59,37 +73,57 @@ class BookingController
                 $photographer->getName(),
                 $date
             );
-            $this->saveBookingToCSV($booking);
+
+            // Сохраняем в выбранное хранилище
+            $this->repository->saveBooking($booking, $storageType);
+
             header('Location: ?route=success');
             exit;
         }
 
-        require __DIR__ . '/../views/form.php';
+        require __DIR__ . '/../view/form.php';
     }
 
     public function showSuccess(): void
     {
-        require __DIR__ . '/../views/success.php';
+        require __DIR__ . '/../view/success.php';
     }
 
-
-    private function saveBookingToCSV(Booking $booking): void
+    public function migrateData(): void
     {
-        $filePath = __DIR__ . '/../data/bookings.csv';
-        $isNewFile = !file_exists($filePath);
-        $file = fopen($filePath, 'a');
-
-        if ($isNewFile) {
-            fputcsv($file, ['name', 'service', 'photographer', 'date']);
+        try {
+            $migratedCount = DataMigrator::migrateFromCsvToDb();
+            $message = "Успешно мигрировано записей: $migratedCount";
+        } catch (Exception $e) {
+            $message = "Ошибка при миграции данных: " . $e->getMessage();
         }
 
-        fputcsv($file, [
-            $booking->getName(),
-            $booking->getService(),
-            $booking->getPhotographer(),
-            $booking->getDate()
-        ]);
+        $storageType = $_COOKIE['storage_type'] ?? 'csv';
+        require __DIR__ . '/../view/migrate.php';
+    }
 
-        fclose($file);
+    #[NoReturn] public function setStorageType(): void
+    {
+        $type = $_POST['storage_type'] ?? 'csv';
+
+        // Устанавливаем куки на 30 дней
+        setcookie('storage_type', $type, time() + 30 * 24 * 60 * 60, '/');
+
+        // Перенаправляем обратно на форму
+        header('Location: ?route=form');
+        exit;
+    }
+
+    public function showBookings(): void
+    {
+        $storageType = $_COOKIE['storage_type'] ?? 'csv';
+
+        if ($storageType === 'db') {
+            $bookings = $this->repository->getAllBookingsFromDb();
+        } else {
+            $bookings = $this->repository->getAllBookingsFromCsv();
+        }
+
+        require __DIR__ . '/../view/bookings.php';
     }
 }

@@ -7,7 +7,6 @@ class Photographer
 
     public function __construct(string $name)
     {
-        // Валидация
         $validPhotographers = [
             'Анна Иванова',
             'Игорь Петров',
