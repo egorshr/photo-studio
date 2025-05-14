@@ -5,9 +5,7 @@ require_once __DIR__ . '/../model/Booking.php';
 
 class BookingRepository
 {
-
-    private const CSV_FILE_PATH = __DIR__ . '/../data/bookings.csv';
-
+    private const CSV_FILE_PATH = __DIR__ . '/../data/bookings_%d.csv'; // Изменили путь для хранения по userId
 
     public function saveBooking(Booking $booking, string $storage = 'csv'): void
     {
@@ -18,48 +16,54 @@ class BookingRepository
         }
     }
 
-
     private function saveToDatabase(Booking $booking): void
     {
         try {
             Database::initDatabase();
             $db = Database::getConnection();
 
-            $stmt = $db->prepare("INSERT INTO bookings (name, service, photographer, date) VALUES (?, ?, ?, ?)");
+            $stmt = $db->prepare("INSERT INTO bookings (name, service, photographer, date, user_id) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([
                 $booking->getName(),
                 $booking->getService(),
                 $booking->getPhotographer(),
-                $booking->getDate()
+                $booking->getDate(),
+                $booking->getUserId()
             ]);
         } catch (PDOException $e) {
             throw new Exception("Ошибка при сохранении в базу данных: " . $e->getMessage());
         }
     }
 
-
     private function saveToCsv(Booking $booking): void
     {
-        $filePath = self::CSV_FILE_PATH;
+        $filePath = sprintf(self::CSV_FILE_PATH, $booking->getUserId());
         $isNewFile = !file_exists($filePath);
+
+        // Создаем директорию, если не существует
+        $dir = dirname($filePath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
         $file = fopen($filePath, 'a');
 
         if ($isNewFile) {
-            fputcsv($file, ['name', 'service', 'photographer', 'date']);
+            fputcsv($file, ['name', 'service', 'photographer', 'date', 'user_id']);
         }
 
         fputcsv($file, [
             $booking->getName(),
             $booking->getService(),
             $booking->getPhotographer(),
-            $booking->getDate()
+            $booking->getDate(),
+            $booking->getUserId()
         ]);
 
         fclose($file);
     }
 
-
-    public function getAllBookingsFromDb(array $filters = []): array
+    public function getAllBookingsFromDb(array $filters = [], ?int $userId = null): array
     {
         try {
             Database::initDatabase();
@@ -67,6 +71,12 @@ class BookingRepository
 
             $sql = "SELECT * FROM bookings WHERE 1=1";
             $params = [];
+
+            // Добавляем фильтр по user_id, если указан
+            if ($userId !== null) {
+                $sql .= " AND user_id = ?";
+                $params[] = $userId;
+            }
 
             if (!empty($filters['name'])) {
                 $sql .= " AND name LIKE ?";
@@ -103,15 +113,19 @@ class BookingRepository
         }
     }
 
-    public function getAllBookingsFromCsv(array $filters = []): array
+    public function getAllBookingsFromCsv(array $filters = [], ?int $userId = null): array
     {
-        $filePath = self::CSV_FILE_PATH;
+        if ($userId === null) {
+            return [];
+        }
+
+        $filePath = sprintf(self::CSV_FILE_PATH, $userId);
         if (!file_exists($filePath)) {
             return [];
         }
 
         $file = fopen($filePath, 'r');
-        fgetcsv($file);
+        fgetcsv($file); // Пропускаем заголовок
 
         $bookings = [];
         while (($data = fgetcsv($file)) !== false) {
@@ -120,7 +134,8 @@ class BookingRepository
                     'name' => $data[0],
                     'service' => $data[1],
                     'photographer' => $data[2],
-                    'date' => $data[3]
+                    'date' => $data[3],
+                    'user_id' => $data[4] ?? $userId
                 ];
 
                 $match = true;

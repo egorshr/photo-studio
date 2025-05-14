@@ -66,13 +66,21 @@ class BookingController
         }
 
         if (empty($errors)) {
+            // Получаем ID текущего пользователя
+            $userId = $_SESSION['user_id'] ?? 0;
+            if ($userId <= 0) {
+                $errors[] = "Необходимо авторизоваться для создания записи";
+                require __DIR__ . '/../view/form.php';
+                return;
+            }
+
             $booking = new Booking(
                 $name,
                 $service->getName(),
                 $photographer->getName(),
-                $date
+                $date,
+                $userId
             );
-
 
             $this->repository->saveBooking($booking, $storageType);
 
@@ -91,7 +99,12 @@ class BookingController
     public function migrateData(): void
     {
         try {
-            $migratedCount = DataMigrator::migrateFromCsvToDb();
+            $userId = $_SESSION['user_id'] ?? 0;
+            if ($userId <= 0) {
+                throw new Exception("Необходимо авторизоваться для миграции данных");
+            }
+
+            $migratedCount = DataMigrator::migrateFromCsvToDb($userId);
             $message = "Успешно мигрировано записей: $migratedCount";
         } catch (Exception $e) {
             $message = "Ошибка при миграции данных: " . $e->getMessage();
@@ -104,10 +117,7 @@ class BookingController
     #[NoReturn] public function setStorageType(): void
     {
         $type = $_POST['storage_type'] ?? 'csv';
-
-
         setcookie('storage_type', $type, time() + 30 * 24 * 60 * 60, '/');
-
         header('Location: ?route=form');
         exit;
     }
@@ -115,6 +125,12 @@ class BookingController
     public function showBookings(): void
     {
         $storageType = $_COOKIE['storage_type'] ?? 'csv';
+        $userId = $_SESSION['user_id'] ?? 0;
+
+        if ($userId <= 0) {
+            header('Location: ?route=login');
+            exit;
+        }
 
         $filters = [
             'name' => $_GET['filter_name'] ?? '',
@@ -125,9 +141,9 @@ class BookingController
         ];
 
         if ($storageType === 'db') {
-            $bookings = $this->repository->getAllBookingsFromDb($filters);
+            $bookings = $this->repository->getAllBookingsFromDb($filters, $userId);
         } else {
-            $bookings = $this->repository->getAllBookingsFromCsv($filters);
+            $bookings = $this->repository->getAllBookingsFromCsv($filters, $userId);
         }
 
         $availableServices = Service::getAvailableServices();

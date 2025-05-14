@@ -97,7 +97,7 @@
         </div>
     <?php endif; ?>
 
-    <form action="?route=login" method="POST">
+    <form action="?route=login" method="POST" autocomplete="off">
         <div>
             <label for="username">Логин</label>
             <input type="text" id="username" name="username" required>
