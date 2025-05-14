@@ -116,11 +116,22 @@ class BookingController
     {
         $storageType = $_COOKIE['storage_type'] ?? 'csv';
 
+        $filters = [
+            'name' => $_GET['filter_name'] ?? '',
+            'service' => $_GET['filter_service'] ?? '',
+            'photographer' => $_GET['filter_photographer'] ?? '',
+            'date_from' => $_GET['filter_date_from'] ?? '',
+            'date_to' => $_GET['filter_date_to'] ?? ''
+        ];
+
         if ($storageType === 'db') {
-            $bookings = $this->repository->getAllBookingsFromDb();
+            $bookings = $this->repository->getAllBookingsFromDb($filters);
         } else {
-            $bookings = $this->repository->getAllBookingsFromCsv();
+            $bookings = $this->repository->getAllBookingsFromCsv($filters);
         }
+
+        $availableServices = Service::getAvailableServices();
+        $availablePhotographers = Photographer::getAvailablePhotographers();
 
         require __DIR__ . '/../view/bookings.php';
     }
