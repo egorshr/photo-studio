@@ -64,6 +64,18 @@ class Router
             case 'logout':
                 $authController->logout();
 
+            case 'generate-pdf':
+                AuthController::requireLogin();
+                $bookingController->generatePdfReport();
+
+            case 'generate-excel':
+                AuthController::requireLogin();
+                $bookingController->generateExcelReport();
+
+            case 'generate-csv':
+                AuthController::requireLogin();
+                $bookingController->generateCsvReport();
+
             default:
                 http_response_code(404);
                 echo "Страница не найдена";

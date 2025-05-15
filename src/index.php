@@ -1,6 +1,4 @@
 <?php
-
-
 require_once __DIR__ . '/Router.php';
 require_once __DIR__ . '/model/Database.php';
 

@@ -1,6 +1,10 @@
 <?php
 
 use JetBrains\PhpStorm\NoReturn;
+use Mpdf\Mpdf;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 
 require_once __DIR__ . '/../model/Booking.php';
 require_once __DIR__ . '/../model/Photographer.php';
@@ -151,4 +155,95 @@ class BookingController
 
         require __DIR__ . '/../view/bookings.php';
     }
+    #[NoReturn] public function generatePdfReport(): void
+    {
+        $bookings = $this->getFilteredBookings();
+
+        $html = $this->renderPdfHtml($bookings);
+
+        $mpdf = new Mpdf();
+        $mpdf->WriteHTML($html);
+        $mpdf->Output('bookings_report.pdf', 'D');
+        exit;
+    }
+
+    #[NoReturn] public function generateExcelReport(): void
+    {
+        $bookings = $this->getFilteredBookings();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Заголовки
+        $sheet->setCellValue('A1', 'ID')
+            ->setCellValue('B1', 'Имя')
+            ->setCellValue('C1', 'Услуга')
+            ->setCellValue('D1', 'Фотограф')
+            ->setCellValue('E1', 'Дата');
+
+        // Данные
+        $row = 2;
+        foreach ($bookings as $booking) {
+            $sheet->setCellValue('A'.$row, $booking['id'] ?? '')
+                ->setCellValue('B'.$row, $booking['name'])
+                ->setCellValue('C'.$row, $booking['service'])
+                ->setCellValue('D'.$row, $booking['photographer'])
+                ->setCellValue('E'.$row, $booking['date']);
+            $row++;
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="bookings_report.xlsx"');
+        $writer->save('php://output');
+        exit;
+    }
+
+    #[NoReturn] public function generateCsvReport(): void
+    {
+        $bookings = $this->getFilteredBookings();
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="bookings_report.csv"');
+
+        $output = fopen('php://output', 'w');
+        fputcsv($output, ['ID', 'Имя', 'Услуга', 'Фотограф', 'Дата']);
+
+        foreach ($bookings as $booking) {
+            fputcsv($output, [
+                $booking['id'] ?? '',
+                $booking['name'],
+                $booking['service'],
+                $booking['photographer'],
+                $booking['date']
+            ]);
+        }
+        fclose($output);
+        exit;
+    }
+
+    private function getFilteredBookings(): array
+    {
+        $storageType = $_COOKIE['storage_type'] ?? 'csv';
+        $userId = $_SESSION['user_id'] ?? 0;
+        $filters = [
+            'name' => $_GET['filter_name'] ?? '',
+            'service' => $_GET['filter_service'] ?? '',
+            'photographer' => $_GET['filter_photographer'] ?? '',
+            'date_from' => $_GET['filter_date_from'] ?? '',
+            'date_to' => $_GET['filter_date_to'] ?? ''
+        ];
+
+        return $storageType === 'db'
+            ? $this->repository->getAllBookingsFromDb($filters, $userId)
+            : $this->repository->getAllBookingsFromCsv($filters, $userId);
+    }
+
+    private function renderPdfHtml(array $bookings): string
+    {
+        ob_start();
+        include __DIR__ . '/../view/pdf_template.php';
+        return ob_get_clean();
+    }
+
 }
