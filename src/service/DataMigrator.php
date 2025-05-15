@@ -22,10 +22,8 @@ class DataMigrator
             throw new Exception('Не удалось открыть файл CSV');
         }
 
-        // Пропускаем заголовок
         fgetcsv($file);
 
-        // Подготавливаем запрос с учетом user_id
         $stmt = $db->prepare("INSERT INTO bookings (name, service, photographer, date, user_id) VALUES (?, ?, ?, ?, ?)");
 
         $migrated = 0;
@@ -37,7 +35,7 @@ class DataMigrator
                     $data[1],                // service
                     $data[2],                // photographer
                     $data[3],                // date
-                    $data[4] ?? $userId      // user_id (используем из файла или текущий)
+                    $data[4] ?? $userId      // user_id
                 ]);
                 $migrated++;
             }
@@ -45,7 +43,7 @@ class DataMigrator
 
         fclose($file);
 
-        // Очищаем CSV файл, оставляя только заголовок
+
         $file = fopen($filePath, 'w');
         fputcsv($file, ['name', 'service', 'photographer', 'date', 'user_id']);
         fclose($file);

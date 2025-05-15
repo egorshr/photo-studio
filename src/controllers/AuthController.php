@@ -69,7 +69,7 @@ class AuthController
         $confirmPassword = $_POST['confirm_password'] ?? '';
         $errors = [];
 
-        // Валидация
+
         if (empty($username)) {
             $errors[] = "Логин обязателен для заполнения";
         } elseif (strlen($username) < 3) {
@@ -86,7 +86,7 @@ class AuthController
             $errors[] = "Пароли не совпадают";
         }
 
-        // Проверка существования пользователя
+
         $existingUser = $this->userRepository->getUserByUsername($username);
         if ($existingUser) {
             $errors[] = "Пользователь с таким логином уже существует";
@@ -107,7 +107,7 @@ class AuthController
             return;
         }
 
-        // Перенаправляем на страницу входа
+
         header('Location: ?route=login');
         exit;
     }

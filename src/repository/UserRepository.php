@@ -60,7 +60,7 @@ class UserRepository
                 $userData['id'],
                 $userData['created_at']
             );
-        } catch (PDOException $e) {
+        } catch (PDOException) {
             return null;
         }
     }
@@ -86,7 +86,7 @@ class UserRepository
                 $userData['id'],
                 $userData['created_at']
             );
-        } catch (PDOException $e) {
+        } catch (PDOException) {
             return null;
         }
     }

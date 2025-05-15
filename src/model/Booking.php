@@ -6,7 +6,7 @@ class Booking
     private string $service;
     private string $photographer;
     private string $date;
-    private int $userId; // Добавлено поле userId
+    private int $userId;
 
     public function __construct(string $name, string $service, string $photographer, string $date, int $userId)
     {

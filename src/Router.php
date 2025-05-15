@@ -1,5 +1,5 @@
 <?php
-// src/Router.php - обновленная версия с исправлением ошибки в set-storage route
+
 
 require_once __DIR__ . '/controllers/BookingController.php';
 require_once __DIR__ . '/controllers/AuthController.php';
@@ -14,7 +14,7 @@ class Router
         switch ($route) {
             case '':
             case 'form':
-                // Проверяем авторизацию пользователя
+
                 AuthController::requireLogin();
 
                 if ($method === 'POST') {
@@ -30,20 +30,20 @@ class Router
                 break;
 
             case 'migrate':
-                AuthController::requireAdmin(); // Требуем права администратора
+                AuthController::requireAdmin();
                 $bookingController->migrateData();
                 break;
 
             case 'set-storage':
                 AuthController::requireLogin();
-                $bookingController->setStorageType(); // Добавлен missing break
+                $bookingController->setStorageType();
 
             case 'bookings':
                 AuthController::requireLogin();
                 $bookingController->showBookings();
                 break;
 
-            // Маршруты для аутентификации
+
             case 'login':
                 if ($method === 'POST') {
                     $authController->login();
@@ -61,7 +61,7 @@ class Router
                 break;
 
             case 'logout':
-                $authController->logout(); // Добавлен missing break
+                $authController->logout();
 
             default:
                 http_response_code(404);

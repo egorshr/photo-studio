@@ -26,11 +26,10 @@ class Database
     {
         $db = self::getConnection();
 
-        // Проверяем существование таблицы bookings
+
         $tableExists = $db->query("SHOW TABLES LIKE 'bookings'")->rowCount() > 0;
 
         if (!$tableExists) {
-            // Создаем таблицу с полем user_id
             $sql = "CREATE TABLE bookings (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
@@ -43,10 +42,8 @@ class Database
             )";
             $db->exec($sql);
         } else {
-            // Проверяем, существует ли уже поле user_id
             $columnExists = $db->query("SHOW COLUMNS FROM bookings LIKE 'user_id'")->rowCount() > 0;
             if (!$columnExists) {
-                // Добавляем поле user_id, если его ещё нет
                 $db->exec("ALTER TABLE bookings ADD COLUMN user_id INT NOT NULL DEFAULT 1");
                 $db->exec("ALTER TABLE bookings ADD FOREIGN KEY (user_id) REFERENCES users(id)");
             }

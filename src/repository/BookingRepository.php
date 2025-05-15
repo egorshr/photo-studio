@@ -5,7 +5,7 @@ require_once __DIR__ . '/../model/Booking.php';
 
 class BookingRepository
 {
-    private const CSV_FILE_PATH = __DIR__ . '/../data/bookings_%d.csv'; // Изменили путь для хранения по userId
+    private const CSV_FILE_PATH = __DIR__ . '/../data/bookings_%d.csv';
 
     public function saveBooking(Booking $booking, string $storage = 'csv'): void
     {
@@ -40,7 +40,6 @@ class BookingRepository
         $filePath = sprintf(self::CSV_FILE_PATH, $booking->getUserId());
         $isNewFile = !file_exists($filePath);
 
-        // Создаем директорию, если не существует
         $dir = dirname($filePath);
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
@@ -72,7 +71,7 @@ class BookingRepository
             $sql = "SELECT * FROM bookings WHERE 1=1";
             $params = [];
 
-            // Добавляем фильтр по user_id, если указан
+
             if ($userId !== null) {
                 $sql .= " AND user_id = ?";
                 $params[] = $userId;
