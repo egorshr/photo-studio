@@ -4,6 +4,7 @@
 require_once __DIR__ . '/controllers/BookingController.php';
 require_once __DIR__ . '/controllers/AuthController.php';
 
+
 class Router
 {
     public function handleRequest(string $route, string $method): void

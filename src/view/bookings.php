@@ -314,7 +314,11 @@ $userRole = $_SESSION['role'] ?? '';
         <?php if ($storageType === 'csv'): ?>
             <a href="?route=migrate" class="button">Мигрировать в БД</a>
         <?php endif; ?>
+
+
     </div>
+
+
 </div>
 </body>
 </html>
