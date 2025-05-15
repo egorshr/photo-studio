@@ -1,6 +1,5 @@
 <?php
 
-
 require_once __DIR__ . '/controllers/BookingController.php';
 require_once __DIR__ . '/controllers/AuthController.php';
 
@@ -38,6 +37,7 @@ class Router
             case 'set-storage':
                 AuthController::requireLogin();
                 $bookingController->setStorageType();
+                break; // Добавлен пропущенный break
 
             case 'bookings':
                 AuthController::requireLogin();
@@ -63,18 +63,22 @@ class Router
 
             case 'logout':
                 $authController->logout();
+                break;
 
             case 'generate-pdf':
                 AuthController::requireLogin();
                 $bookingController->generatePdfReport();
+                break;
 
             case 'generate-excel':
                 AuthController::requireLogin();
                 $bookingController->generateExcelReport();
+                break;
 
             case 'generate-csv':
                 AuthController::requireLogin();
                 $bookingController->generateCsvReport();
+                break;
 
             default:
                 http_response_code(404);

@@ -70,7 +70,6 @@ class BookingController
         }
 
         if (empty($errors)) {
-            // Получаем ID текущего пользователя
             $userId = $_SESSION['user_id'] ?? 0;
             if ($userId <= 0) {
                 $errors[] = "Необходимо авторизоваться для создания записи";
@@ -161,7 +160,25 @@ class BookingController
 
         $html = $this->renderPdfHtml($bookings);
 
-        $mpdf = new Mpdf();
+
+        $tempDir = sys_get_temp_dir() . '/mpdf_tmp';
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
+
+
+        chmod($tempDir, 0777);
+
+        $mpdf = new Mpdf([
+            'tempDir' => $tempDir,
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 15,
+            'margin_bottom' => 15,
+        ]);
+
         $mpdf->WriteHTML($html);
         $mpdf->Output('bookings_report.pdf', 'D');
         exit;
@@ -174,14 +191,14 @@ class BookingController
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Заголовки
+
         $sheet->setCellValue('A1', 'ID')
             ->setCellValue('B1', 'Имя')
             ->setCellValue('C1', 'Услуга')
             ->setCellValue('D1', 'Фотограф')
             ->setCellValue('E1', 'Дата');
 
-        // Данные
+
         $row = 2;
         foreach ($bookings as $booking) {
             $sheet->setCellValue('A'.$row, $booking['id'] ?? '')
