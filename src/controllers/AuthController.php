@@ -33,7 +33,6 @@ class AuthController
         $errors = [];
 
         if (empty($username) || empty($password)) {
-            $errors[] = "Логин и пароль обязательны для заполнения";
             require __DIR__ . '/../view/login.php';
             return;
         }
@@ -41,7 +40,6 @@ class AuthController
         $user = $this->userRepository->getUserByUsername($username);
 
         if (!$user || !$user->verifyPassword($password)) {
-            $errors[] = "Неверный логин или пароль";
             require __DIR__ . '/../view/login.php';
             return;
         }
@@ -102,7 +100,6 @@ class AuthController
         $user = new User($username, $passwordHash);
 
         if (!$this->userRepository->createUser($user)) {
-            $errors[] = "Ошибка при создании пользователя";
             require __DIR__ . '/../view/register.php';
             return;
         }

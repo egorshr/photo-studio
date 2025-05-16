@@ -30,14 +30,14 @@ class Router
                 break;
 
             case 'migrate':
-                AuthController::requireAdmin();
+                AuthController::requireLogin();
                 $bookingController->migrateData();
                 break;
 
             case 'set-storage':
                 AuthController::requireLogin();
                 $bookingController->setStorageType();
-                break; // Добавлен пропущенный break
+                break; 
 
             case 'bookings':
                 AuthController::requireLogin();

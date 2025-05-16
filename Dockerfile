@@ -2,16 +2,8 @@ FROM php:8.2-apache
 
 
 RUN apt-get update && apt-get install -y \
-    libzip-dev \
-    zip \
-    unzip \
-    libpng-dev \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    git \
-    && docker-php-ext-install pdo pdo_mysql zip gd
+    && docker-php-ext-install pdo pdo_mysql
 
-RUN a2enmod rewrite
 
 
 COPY composer.json /var/www/
